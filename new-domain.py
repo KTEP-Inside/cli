@@ -1,76 +1,135 @@
 #!/usr/bin/env python3
-"""
-1. Создать конфиг из шаблона в /etc/nginx/sites-available
-2. Сгенерировать сертификат в /etc/nginx/certs
-3. Создать папку с именем поддомена в ~/Documents
-"""
 import argparse
 import pathlib
 import subprocess
 
 
-TEMPLATE_FILE = pathlib.Path('template.conf').resolve()
-DEFAULT_DOMAIN = 'ktep-inside.local'
+DOCUMENTS_DIRECTORY_PATH = pathlib.Path('/home/jam/Documents')
+
+TEMPLATE_FILE_PATH = pathlib.Path('template.conf').resolve()
+
+DEFAULT_DOMAIN_NAME = 'ktep-inside.local'
+
+CERTIFICATE_SUBJECT = {
+	'CN': 'KInsideAdmin',
+	'O': 'KTEP',
+	'OU': 'KInside',
+	'C': 'RU',
+	'ST': 'Kaluga region',
+	'L': 'Kaluga',
+	'emailAddress': 'ktep-inside@mail.ru',
+}
+
 NGINX_ROOT_PATH = pathlib.Path('/etc/nginx')
+
 NGINX_SITES_AVAILABLE_PATH = NGINX_ROOT_PATH / 'sites-available'
+
 NGINX_CERTIFICATES_PATH = NGINX_ROOT_PATH / 'certs'
-DOCUMENTS_FOLDER = pathlib.Path('/home/jam/Documents')
-
-
-def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser()
-    parser.add_argument(
-        'subdomain',
-    )
-    parser.add_argument(
-        '-d',
-        '--domain',
-        default=DEFAULT_DOMAIN,
-    )
-    return parser.parse_args()
-
-
-def create_config(domain: str, subdomain: str) -> None:
-    file_name = f'{subdomain}.{domain}.conf'
-    file_path = NGINX_SITES_AVAILABLE_PATH / file_name
-    config_content = generate_config_from_template(domain, subdomain)
-    file_path.write_text(config_content)
-
-
-def create_certificates(domain: str, subdomain: str) -> None:
-    key_file_name = f'{subdomain}.{domain}.key'
-    key_file_path = NGINX_CERTIFICATES_PATH / key_file_name
-    certificate_file_name = f'{subdomain}.{domain}.crt'
-    certificate_file_path = NGINX_CERTIFICATES_PATH / certificate_file_name
-    subprocess.run([
-        'sudo', 'openssl', 'req', '-x509', '-nodes', '-days', '365', '-newkey', 'rsa:2048',
-        '-keyout', key_file_path,
-        '-out', certificate_file_path,
-        '-subj',
-        '/CN=KInsideAdmin/O=KTEP/OU=KInside/C=RU/ST=Kaluga region/L=Kaluga/emailAddress=ktep-inside@mail.ru',
-    ])
 
 
 def create_folder_in_documents(subdomain: str) -> None:
-    folder_path = DOCUMENTS_FOLDER / subdomain
-    folder_path.mkdir(exist_ok=True)
+	folder_path = DOCUMENTS_DIRECTORY_PATH / subdomain
+	folder_path.mkdir(exist_ok=True)
 
 
-def generate_config_from_template(domain: str, subdomain: str) -> str:
-    template_content = TEMPLATE_FILE.read_text()
-    rendered_content = template_content.format(domain=domain, subdomain=subdomain)
-    return rendered_content
+def create_config(
+	subdomain: str,
+	domain: str,
+) -> None:
+	path = resolve_config_file_path(subdomain, domain)
+	content = generate_config_from_template(domain, subdomain)
+	path.write_text(content)
+
+
+def resolve_config_file_path(
+	subdomain: str,
+	domain: str,
+) -> pathlib.Path:
+	name = f'{subdomain}.{domain}'
+	return NGINX_SITES_AVAILABLE_PATH / name
+
+
+def generate_config_from_template(
+	subdomain: str,
+	domain: str,
+) -> str:
+	content = TEMPLATE_FILE_PATH.read_text()
+	rendered_content = content.format(domain=domain, subdomain=subdomain)
+	return rendered_content
+
+
+def create_certificate(
+	subdomain: str,
+	domain: str,
+) -> None:
+	path = resolve_certificate_file_path(subdomain, domain)
+	key_path = resolve_certificate_key_file_path(subdomain, domain)
+	subject = generate_certificate_subject()
+	run_openssl(path, key_path, subject)
+
+
+def resolve_certificate_key_file_path(
+	subdomain: str,
+	domain: str,
+) -> pathlib.Path:
+	name = f'{subdomain}.{domain}.key'
+	return NGINX_CERTIFICATES_PATH / name
+
+
+def resolve_certificate_file_path(
+	subdomain: str,
+	domain: str,
+) -> pathlib.Path:
+	name = f'{subdomain}.{domain}.crt'
+	return NGINX_CERTIFICATES_PATH / name
+
+
+def generate_certificate_subject() -> str:
+	string = ''
+	for key, value in CERTIFICATE_SUBJECT.items():
+		string += f'/{key}={value}'
+	return string
+
+
+def run_openssl(
+	certificate_file_path: pathlib.Path,
+	certificate_key_file_path: pathlib.Path,
+	subject_string: str,
+) -> None:
+	subprocess.run([
+		'openssl', 'req',
+		'-x509',
+		'-nodes',
+		'-days', '365',
+		'-newkey', 'rsa:2048',
+		'-out', certificate_key_file_path,
+		'-keyout', certificate_file_path,
+		'-subj', subject_string,
+	])
+
+
+def parse_args() -> argparse.Namespace:
+	parser = argparse.ArgumentParser()
+	parser.add_argument(
+		'subdomain',
+	)
+	parser.add_argument(
+		'-d',
+		'--domain',
+		default=DEFAULT_DOMAIN_NAME,
+	)
+	return parser.parse_args()
 
 
 def main():
-    args = parse_args()
-    subdomain = args.subdomain
-    domain = args.domain
+	args = parse_args()
+	subdomain = args.subdomain
+	domain = args.domain
 
-    create_config(domain, subdomain)
-    create_certificates(domain, subdomain)
-    create_folder_in_documents(subdomain)
+	create_folder_in_documents(subdomain)
+	create_config(subdomain, domain)
+	create_certificate(subdomain, domain)
 
 
 if __name__ == '__main__':
-    main()
+	main()
