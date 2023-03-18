@@ -51,16 +51,16 @@ def create_directory_in_documents(subdomain: str) -> None:
 	path.mkdir(exist_ok=True)
 
 
-def create_config(
+def create_nginx_config(
 	subdomain: str,
 	domain: str,
 ) -> None:
-	path = resolve_config_file_path(subdomain, domain)
-	content = generate_config_from_template(domain, subdomain)
+	path = resolve_nginx_config_file_path(subdomain, domain)
+	content = generate_nginx_config_from_template(domain, subdomain)
 	path.write_text(content)
 
 
-def resolve_config_file_path(
+def resolve_nginx_config_file_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
@@ -68,7 +68,7 @@ def resolve_config_file_path(
 	return NGINX_SITES_AVAILABLE_PATH / name
 
 
-def generate_config_from_template(
+def generate_nginx_config_from_template(
 	subdomain: str,
 	domain: str,
 ) -> str:
@@ -93,17 +93,17 @@ def resolve_logs_directory_path(
 	return SITES_DIRECTORY_PATH / site_directory / 'logs'
 
 
-def create_certificate(
+def create_ssl_certificate(
 	subdomain: str,
 	domain: str,
 ) -> None:
-	path = resolve_certificate_file_path(subdomain, domain)
-	key_path = resolve_certificate_key_file_path(subdomain, domain)
-	subject = generate_certificate_subject()
+	path = resolve_ssl_certificate_file_path(subdomain, domain)
+	key_path = resolve_ssl_certificate_key_file_path(subdomain, domain)
+	subject = generate_ssl_certificate_subject()
 	run_openssl(path, key_path, subject)
 
 
-def resolve_certificate_file_path(
+def resolve_ssl_certificate_file_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
@@ -111,7 +111,7 @@ def resolve_certificate_file_path(
 	return NGINX_CERTIFICATES_PATH / name
 
 
-def resolve_certificate_key_file_path(
+def resolve_ssl_certificate_key_file_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
@@ -119,7 +119,7 @@ def resolve_certificate_key_file_path(
 	return NGINX_CERTIFICATES_PATH / name
 
 
-def generate_certificate_subject() -> str:
+def generate_ssl_certificate_subject() -> str:
 	string = ''
 	for key, value in CERTIFICATE_SUBJECT.items():
 		string += f'/{key}={value}'
@@ -162,9 +162,9 @@ def main():
 	domain = args.domain
 
 	create_directory_in_documents(subdomain)
-	create_config(subdomain, domain)
+	create_nginx_config(subdomain, domain)
 	create_logs_directory(subdomain, domain)
-	create_certificate(subdomain, domain)
+	create_ssl_certificate(subdomain, domain)
 
 
 if __name__ == '__main__':
