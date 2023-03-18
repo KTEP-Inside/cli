@@ -64,7 +64,7 @@ def resolve_nginx_config_file_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
-	name = f'{subdomain}.{domain}'
+	name = f'{subdomain}.{domain}.conf'
 	return NGINX_SITES_AVAILABLE_PATH / name
 
 
