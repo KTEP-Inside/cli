@@ -10,6 +10,8 @@ TEMPLATE_FILE_PATH = pathlib.Path('template.conf').resolve()
 
 DEFAULT_DOMAIN_NAME = 'ktep-inside.local'
 
+SITES_DIRECTORY_PATH = pathlib.Path('/web/sites/kinside')
+
 CERTIFICATE_SUBJECT = {
 	'CN': 'KInsideAdmin',
 	'O': 'KTEP',
@@ -56,6 +58,22 @@ def generate_config_from_template(
 	content = TEMPLATE_FILE_PATH.read_text()
 	rendered_content = content.format(domain=domain, subdomain=subdomain)
 	return rendered_content
+
+
+def create_logs_directory(
+	subdomain: str,
+	domain: str,
+) -> None:
+	path = resolve_logs_directory_path(subdomain, domain)
+	path.mkdir(parents=True, exist_ok=True)
+
+
+def resolve_logs_directory_path(
+	subdomain: str,
+	domain: str,
+) -> pathlib.Path:
+	site_directory = f'{subdomain}.{domain}'
+	return SITES_DIRECTORY_PATH / site_directory / 'logs'
 
 
 def create_certificate(
@@ -128,6 +146,7 @@ def main():
 
 	create_directory_in_documents(subdomain)
 	create_config(subdomain, domain)
+	create_logs_directory(subdomain, domain)
 	create_certificate(subdomain, domain)
 
 
