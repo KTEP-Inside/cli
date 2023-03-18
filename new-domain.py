@@ -1,4 +1,21 @@
 #!/usr/bin/env python3
+"""Утилита для автоматизации настройки нового поддомена.
+
+Скрипт выполняет следующие действия:
+  - Создаёт директорию ~/Documents/<subdomain>
+  - Создаёт конфиг nginx из шаблона template.conf:
+    /etc/nginx/sites-available/<subdomain>.<domain>.conf
+  - Создаёт директорию для логов nginx:
+    /web/sites/kinside/<subdomain>.<domain>/logs
+  - Генерирует self-signed ssl сертификат:
+    /etc/nginx/certs/<subdomain>.<domain>.crt
+	/etc/nginx/certs/<subdomain>.<domain>.key
+
+При запуске скрипта вы должны указать имя поддомена и опциональное
+имя домена в аргументах:
+
+  new-domain.py <subdomain> [-d <domain>]
+"""
 import argparse
 import pathlib
 import subprocess
@@ -9,6 +26,8 @@ DOCUMENTS_DIRECTORY_PATH = pathlib.Path('/home/jam/Documents')
 TEMPLATE_FILE_PATH = pathlib.Path('template.conf').resolve()
 
 DEFAULT_DOMAIN_NAME = 'ktep-inside.local'
+
+SITES_DIRECTORY_PATH = pathlib.Path('/web/sites/kinside')
 
 CERTIFICATE_SUBJECT = {
 	'CN': 'KInsideAdmin',
@@ -27,29 +46,29 @@ NGINX_SITES_AVAILABLE_PATH = NGINX_ROOT_PATH / 'sites-available'
 NGINX_CERTIFICATES_PATH = NGINX_ROOT_PATH / 'certs'
 
 
-def create_folder_in_documents(subdomain: str) -> None:
-	folder_path = DOCUMENTS_DIRECTORY_PATH / subdomain
-	folder_path.mkdir(exist_ok=True)
+def create_directory_in_documents(subdomain: str) -> None:
+	path = DOCUMENTS_DIRECTORY_PATH / subdomain
+	path.mkdir(exist_ok=True)
 
 
-def create_config(
+def create_nginx_config(
 	subdomain: str,
 	domain: str,
 ) -> None:
-	path = resolve_config_file_path(subdomain, domain)
-	content = generate_config_from_template(domain, subdomain)
+	path = resolve_nginx_config_file_path(subdomain, domain)
+	content = generate_nginx_config_from_template(domain, subdomain)
 	path.write_text(content)
 
 
-def resolve_config_file_path(
+def resolve_nginx_config_file_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
-	name = f'{subdomain}.{domain}'
+	name = f'{subdomain}.{domain}.conf'
 	return NGINX_SITES_AVAILABLE_PATH / name
 
 
-def generate_config_from_template(
+def generate_nginx_config_from_template(
 	subdomain: str,
 	domain: str,
 ) -> str:
@@ -58,25 +77,33 @@ def generate_config_from_template(
 	return rendered_content
 
 
-def create_certificate(
+def create_logs_directory(
 	subdomain: str,
 	domain: str,
 ) -> None:
-	path = resolve_certificate_file_path(subdomain, domain)
-	key_path = resolve_certificate_key_file_path(subdomain, domain)
-	subject = generate_certificate_subject()
-	run_openssl(path, key_path, subject)
+	path = resolve_logs_directory_path(subdomain, domain)
+	path.mkdir(parents=True, exist_ok=True)
 
 
-def resolve_certificate_key_file_path(
+def resolve_logs_directory_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
-	name = f'{subdomain}.{domain}.key'
-	return NGINX_CERTIFICATES_PATH / name
+	site_directory = f'{subdomain}.{domain}'
+	return SITES_DIRECTORY_PATH / site_directory / 'logs'
 
 
-def resolve_certificate_file_path(
+def create_ssl_certificate(
+	subdomain: str,
+	domain: str,
+) -> None:
+	path = resolve_ssl_certificate_file_path(subdomain, domain)
+	key_path = resolve_ssl_certificate_key_file_path(subdomain, domain)
+	subject = generate_ssl_certificate_subject()
+	run_openssl(path, key_path, subject)
+
+
+def resolve_ssl_certificate_file_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
@@ -84,7 +111,15 @@ def resolve_certificate_file_path(
 	return NGINX_CERTIFICATES_PATH / name
 
 
-def generate_certificate_subject() -> str:
+def resolve_ssl_certificate_key_file_path(
+	subdomain: str,
+	domain: str,
+) -> pathlib.Path:
+	name = f'{subdomain}.{domain}.key'
+	return NGINX_CERTIFICATES_PATH / name
+
+
+def generate_ssl_certificate_subject() -> str:
 	string = ''
 	for key, value in CERTIFICATE_SUBJECT.items():
 		string += f'/{key}={value}'
@@ -126,9 +161,10 @@ def main():
 	subdomain = args.subdomain
 	domain = args.domain
 
-	create_folder_in_documents(subdomain)
-	create_config(subdomain, domain)
-	create_certificate(subdomain, domain)
+	create_directory_in_documents(subdomain)
+	create_nginx_config(subdomain, domain)
+	create_logs_directory(subdomain, domain)
+	create_ssl_certificate(subdomain, domain)
 
 
 if __name__ == '__main__':
