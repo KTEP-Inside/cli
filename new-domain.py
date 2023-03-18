@@ -27,9 +27,9 @@ NGINX_SITES_AVAILABLE_PATH = NGINX_ROOT_PATH / 'sites-available'
 NGINX_CERTIFICATES_PATH = NGINX_ROOT_PATH / 'certs'
 
 
-def create_folder_in_documents(subdomain: str) -> None:
-	folder_path = DOCUMENTS_DIRECTORY_PATH / subdomain
-	folder_path.mkdir(exist_ok=True)
+def create_directory_in_documents(subdomain: str) -> None:
+	path = DOCUMENTS_DIRECTORY_PATH / subdomain
+	path.mkdir(exist_ok=True)
 
 
 def create_config(
@@ -68,19 +68,19 @@ def create_certificate(
 	run_openssl(path, key_path, subject)
 
 
-def resolve_certificate_key_file_path(
-	subdomain: str,
-	domain: str,
-) -> pathlib.Path:
-	name = f'{subdomain}.{domain}.key'
-	return NGINX_CERTIFICATES_PATH / name
-
-
 def resolve_certificate_file_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
 	name = f'{subdomain}.{domain}.crt'
+	return NGINX_CERTIFICATES_PATH / name
+
+
+def resolve_certificate_key_file_path(
+	subdomain: str,
+	domain: str,
+) -> pathlib.Path:
+	name = f'{subdomain}.{domain}.key'
 	return NGINX_CERTIFICATES_PATH / name
 
 
@@ -126,7 +126,7 @@ def main():
 	subdomain = args.subdomain
 	domain = args.domain
 
-	create_folder_in_documents(subdomain)
+	create_directory_in_documents(subdomain)
 	create_config(subdomain, domain)
 	create_certificate(subdomain, domain)
 
