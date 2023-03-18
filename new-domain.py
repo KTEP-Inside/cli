@@ -1,4 +1,21 @@
 #!/usr/bin/env python3
+"""Утилита для автоматизации настройки нового поддомена.
+
+Скрипт выполняет следующие действия:
+  - Создаёт директорию ~/Documents/<subdomain>
+  - Создаёт конфиг nginx из шаблона template.conf:
+    /etc/nginx/sites-available/<subdomain>.<domain>.conf
+  - Создаёт директорию для логов nginx:
+    /web/sites/kinside/<subdomain>.<domain>/logs
+  - Генерирует self-signed ssl сертификат:
+    /etc/nginx/certs/<subdomain>.<domain>.crt
+	/etc/nginx/certs/<subdomain>.<domain>.key
+
+При запуске скрипта вы должны указать имя поддомена и опциональное
+имя домена в аргументах:
+
+  new-domain.py <subdomain> [-d <domain>]
+"""
 import argparse
 import pathlib
 import subprocess
