@@ -137,8 +137,8 @@ def run_openssl(
 		'-nodes',
 		'-days', '365',
 		'-newkey', 'rsa:2048',
-		'-out', certificate_key_file_path,
-		'-keyout', certificate_file_path,
+		'-out', certificate_file_path,
+		'-keyout', certificate_key_file_path,
 		'-subj', subject_string,
 	])
 
