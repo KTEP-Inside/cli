@@ -1,0 +1,2 @@
+include src/domainmanager/template.conf
+exclude-global *.pyc
