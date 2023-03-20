@@ -15,6 +15,7 @@ FILE_NAME_TEMPLATE = '{subdomain}.{domain}.conf'
 class NginxConfigGenerator:
 	domain: str
 	subdomain: str
+	out_directory: pathlib.Path
 
 	def __init__(
 		self,
