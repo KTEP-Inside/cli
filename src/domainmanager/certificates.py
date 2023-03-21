@@ -19,7 +19,7 @@ ATTRIBUTES = {
 }
 
 
-class OpenSSLSertificateGenerator:
+class OpenSSLCertificateGenerator:
 	domain: str
 	subdomain: str
 	out_directory: pathlib.Path
