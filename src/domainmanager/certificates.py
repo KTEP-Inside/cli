@@ -2,13 +2,13 @@ import pathlib
 import subprocess
 
 
-DEFAULT_CERTIFICATE_OUT_DIRECTORY = pathlib.Path('/etc/nginx/certs')
+CERTIFICATES_DIRECTORY = pathlib.Path('/etc/nginx/certs')
 
-CERTIFICATE_FILE_NAME_TEMPLATE = '{subdomain}.{domain}.crt'
+CERTIFICATE_NAME_TEMPLATE = '{subdomain}.{domain}.crt'
 
-KEY_FILE_NAME_TEMPLATE = '{subdomain}.{domain}.key'
+KEY_NAME_TEMPLATE = '{subdomain}.{domain}.key'
 
-ATTRIBUTES = {
+CERTIFICATE_SUBJECT = {
 	'CN': 'KInsideAdmin',
 	'O': 'KTEP',
 	'OU': 'KInside',
@@ -19,66 +19,51 @@ ATTRIBUTES = {
 }
 
 
-class OpenSSLCertificateGenerator:
-	domain: str
-	subdomain: str
-	out_directory: pathlib.Path
+def create_ssl_certificate(
+	subdomain: str,
+	domain: str,
+) -> None:
+	path = _resolve_certificate_path(subdomain, domain)
+	key_path = _resolve_key_path(subdomain, domain)
+	subject = _generate_subject_string()
+	_run_openssl(path, key_path, subject)
 
-	def __init__(
-		self,
-		domain: str,
-		subdomain: str,
-		out_directory: pathlib.Path = DEFAULT_CERTIFICATE_OUT_DIRECTORY,
-	) -> None:
-		self.domain = domain
-		self.subdomain = subdomain
-		self.out_directory = out_directory
 
-	def generate(self) -> None:
-		certificate_path = self.resolve_certificate_file_path()
-		key_path = self.resolve_key_file_path()
-		subject_string = self.create_subject_string()
-		self.run_openssl(certificate_path, key_path, subject_string)
+def _resolve_certificate_path(
+	subdomain: str,
+	domain: str,
+) -> pathlib.Path:
+	name = CERTIFICATE_NAME_TEMPLATE.format(subdomain=subdomain, domain=domain)
+	return CERTIFICATES_DIRECTORY / name
 
-	def resolve_certificate_file_path(self) -> pathlib.Path:
-		name = self.resolve_certificate_file_name()
-		return self.out_directory / name
 
-	def resolve_certificate_file_name(self) -> str:
-		return CERTIFICATE_FILE_NAME_TEMPLATE.format(
-			subdomain=self.subdomain,
-			domain=self.domain,
-		)
+def _resolve_key_path(
+	subdomain: str,
+	domain: str,
+) -> pathlib.Path:
+	name = KEY_NAME_TEMPLATE.format(subdomain=subdomain, domain=domain)
+	return CERTIFICATES_DIRECTORY / name
 
-	def resolve_key_file_path(self) -> pathlib.Path:
-		name = self.resolve_key_file_name()
-		return self.out_directory / name
 
-	def resolve_key_file_name(self) -> str:
-		return KEY_FILE_NAME_TEMPLATE.format(
-			subdomain=self.subdomain,
-			domain=self.domain,
-		)
+def _generate_subject_string() -> str:
+	string = ''
+	for key, value in CERTIFICATE_SUBJECT.items():
+		string += f'/{key}={value}'
+	return string
 
-	def create_subject_string(self) -> str:
-		string = ''
-		for key, value in ATTRIBUTES.items():
-			string += f'/{key}={value}'
-		return string
 
-	def run_openssl(
-		self,
-		certificate_path: pathlib.Path,
-		key_path: pathlib.Path,
-		subject_string: str,
-	) -> None:
-		subprocess.run([
-			'openssl', 'req',
-			'-x509',
-			'-nodes',
-			'-days', '365',
-			'-newkey', 'rsa:2048',
-			'-out', certificate_path,
-			'-keyout', key_path,
-			'-subj', subject_string,
-		])
+def _run_openssl(
+	certificate_path: pathlib.Path,
+	key_path: pathlib.Path,
+	subject_string: str,
+) -> None:
+	subprocess.run([
+		'openssl', 'req',
+		'-x509',
+		'-nodes',
+		'-days', '365',
+		'-newkey', 'rsa:2048',
+		'-out', certificate_path,
+		'-keyout', key_path,
+		'-subj', subject_string,
+	])
