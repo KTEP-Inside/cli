@@ -8,7 +8,7 @@ CERTIFICATE_NAME_TEMPLATE = '{subdomain}.{domain}.crt'
 
 KEY_NAME_TEMPLATE = '{subdomain}.{domain}.key'
 
-CERTIFICATE_SUBJECT = {
+ATTRIBUTES = {
 	'CN': 'KInsideAdmin',
 	'O': 'KTEP',
 	'OU': 'KInside',
@@ -47,7 +47,7 @@ def _resolve_key_path(
 
 def _generate_subject_string() -> str:
 	string = ''
-	for key, value in CERTIFICATE_SUBJECT.items():
+	for key, value in ATTRIBUTES.items():
 		string += f'/{key}={value}'
 	return string
 
