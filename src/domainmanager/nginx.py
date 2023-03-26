@@ -5,8 +5,6 @@ SITES_AVAILABLE_DIRECTORY = pathlib.Path('/etc/nginx/sites-available')
 
 TEMPLATE_FILE = pathlib.Path(__file__).parent / 'template.conf'
 
-CONFIG_NAME_TEMPLATE = '{subdomain}.{domain}.conf'
-
 DEFAULT_DOMAIN = 'ktep-inside.local'
 
 LOGS_DIRECTORY = pathlib.Path('/web/sites/kinside')
@@ -25,7 +23,7 @@ def _resolve_config_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
-	name = CONFIG_NAME_TEMPLATE.format(subdomain=subdomain, domain=domain)
+	name = f'{subdomain}.{domain}.conf'
 	return SITES_AVAILABLE_DIRECTORY / name
 
 
