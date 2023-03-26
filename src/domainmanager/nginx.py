@@ -3,9 +3,11 @@ import pathlib
 
 TEMPLATE_FILE = pathlib.Path(__file__).parent / 'template.conf'
 
-NGINX_SITES_AVAILABLE = pathlib.Path('/etc/nginx/sites-available')
+SITES_AVAILABLE_DIRECTORY = pathlib.Path('/etc/nginx/sites-available')
 
 CONFIG_NAME_TEMPLATE = '{subdomain}.{domain}.conf'
+
+LOGS_DIRECTORY = pathlib.Path('/web/sites/kinside')
 
 
 def create_nginx_config(
@@ -22,7 +24,7 @@ def _resolve_config_path(
 	domain: str,
 ) -> pathlib.Path:
 	name = CONFIG_NAME_TEMPLATE.format(subdomain=subdomain, domain=domain)
-	return NGINX_SITES_AVAILABLE / name
+	return SITES_AVAILABLE_DIRECTORY / name
 
 
 def _generate_config_from_template(
@@ -35,3 +37,11 @@ def _generate_config_from_template(
 def _write_config(path: pathlib.Path, content: str) -> None:
 	path.touch(exist_ok=True)
 	path.write_text(content)
+
+
+def create_nginx_logs_directory(
+	subdomain: str,
+	domain: str,
+) -> None:
+	path = LOGS_DIRECTORY / f'{subdomain}.{domain}' / 'logs'
+	path.mkdir(parents=True, exist_ok=True)
