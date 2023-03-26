@@ -1,49 +1,37 @@
 import pathlib
 
 
-ROOT_PATH = pathlib.Path(__file__).parent
+TEMPLATE_FILE = pathlib.Path(__file__).parent / 'template.conf'
 
-TEMPLATE_FILE =  ROOT_PATH / 'template.conf'
+NGINX_SITES_AVAILABLE = pathlib.Path('/etc/nginx/sites-available')
 
-DEFAULT_CONFIG_OUT_DIRECTORY = pathlib.Path('/etc/nginx/sites-available')
-
-FILE_NAME_TEMPLATE = '{subdomain}.{domain}.conf'
+CONFIG_NAME_TEMPLATE = '{subdomain}.{domain}.conf'
 
 
-class NginxConfigGenerator:
-	domain: str
-	subdomain: str
-	out_directory: pathlib.Path
+def create_nginx_config(
+	subdomain: str,
+	domain: str,
+) -> None:
+	path = _resolve_config_path(subdomain, domain)
+	content = _generate_config_from_template(subdomain, domain)
+	_write_config(path, content)
 
-	def __init__(
-		self,
-		domain: str,
-		subdomain: str,
-		out_directory: pathlib.Path = DEFAULT_CONFIG_OUT_DIRECTORY,
-	) -> None:
-		self.domain = domain
-		self.subdomain = subdomain
-		self.out_directory = out_directory
 
-	def generate(self) -> None:
-		path = self.resolve_file_path()
-		content = self.render_template()
-		self.write_config(path, content)
+def _resolve_config_path(
+	subdomain: str,
+	domain: str,
+) -> pathlib.Path:
+	name = CONFIG_NAME_TEMPLATE.format(subdomain=subdomain, domain=domain)
+	return NGINX_SITES_AVAILABLE / name
 
-	def resolve_file_path(self) -> pathlib.Path:
-		name = self.resolve_file_name()
-		return self.out_directory / name
 
-	def resolve_file_name(self) -> str:
-		return FILE_NAME_TEMPLATE.format(
-			subdomain=self.subdomain,
-			domain=self.domain,
-		)
+def _generate_config_from_template(
+	subdomain: str,
+	domain: str,
+) -> str:
+	content = TEMPLATE_FILE.read_text()
+	return content.format(subdomain=subdomain, domain=domain)
 
-	def render_template(self) -> str:
-		content = TEMPLATE_FILE.read_text()
-		return content.format(domain=self.domain, subdomain=self.subdomain)
-
-	def write_config(self, path: pathlib.Path, content: str) -> None:
-		path.touch(exist_ok=True)
-		path.write_text(content)
+def _write_config(path: pathlib.Path, content: str) -> None:
+	path.touch(exist_ok=True)
+	path.write_text(content)
