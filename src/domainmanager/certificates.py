@@ -4,10 +4,6 @@ import subprocess
 
 CERTIFICATES_DIRECTORY = pathlib.Path('/etc/nginx/certs')
 
-CERTIFICATE_NAME_TEMPLATE = '{subdomain}.{domain}.crt'
-
-KEY_NAME_TEMPLATE = '{subdomain}.{domain}.key'
-
 ATTRIBUTES = {
 	'CN': 'KInsideAdmin',
 	'O': 'KTEP',
@@ -33,16 +29,14 @@ def _resolve_certificate_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
-	name = CERTIFICATE_NAME_TEMPLATE.format(subdomain=subdomain, domain=domain)
-	return CERTIFICATES_DIRECTORY / name
+	return CERTIFICATES_DIRECTORY / f'{subdomain}.{domain}.crt'
 
 
 def _resolve_key_path(
 	subdomain: str,
 	domain: str,
 ) -> pathlib.Path:
-	name = KEY_NAME_TEMPLATE.format(subdomain=subdomain, domain=domain)
-	return CERTIFICATES_DIRECTORY / name
+	return CERTIFICATES_DIRECTORY / f'{subdomain}.{domain}.key'
 
 
 def _generate_subject_string() -> str:
