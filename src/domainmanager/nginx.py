@@ -1,11 +1,13 @@
 import pathlib
 
 
-TEMPLATE_FILE = pathlib.Path(__file__).parent / 'template.conf'
-
 SITES_AVAILABLE_DIRECTORY = pathlib.Path('/etc/nginx/sites-available')
 
+TEMPLATE_FILE = pathlib.Path(__file__).parent / 'template.conf'
+
 CONFIG_NAME_TEMPLATE = '{subdomain}.{domain}.conf'
+
+DEFAULT_DOMAIN = 'ktep-inside.local'
 
 LOGS_DIRECTORY = pathlib.Path('/web/sites/kinside')
 
