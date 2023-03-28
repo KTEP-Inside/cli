@@ -19,10 +19,10 @@ def create_ssl_certificate(
 	subdomain: str,
 	domain: str,
 ) -> None:
-	path = _resolve_certificate_path(subdomain, domain)
+	certificate_path = _resolve_certificate_path(subdomain, domain)
 	key_path = _resolve_key_path(subdomain, domain)
 	subject = _generate_subject_string()
-	_run_openssl(path, key_path, subject)
+	_run_openssl(certificate_path, key_path, subject)
 
 
 def _resolve_certificate_path(
