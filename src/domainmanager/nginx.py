@@ -41,7 +41,7 @@ def create_nginx_logs_directory(
 	path.mkdir(parents=True, exist_ok=True)
 
 
-def list_all_sites() -> None:
+def list_all_domains() -> None:
 	sites = _get_available_sites()
 	_print_sites(sites)
 
@@ -70,11 +70,11 @@ def _print_sites(sites: list[Site]) -> None:
 		print(f'{site.subdomain:<15} {site.domain:<20} {status}')
 
 
-def list_active_sites() -> None:
+def list_active_domains() -> None:
 	sites = [site for site in _get_available_sites() if site.active]
 	_print_sites(sites)
 
 
-def list_inactive_sites() -> None:
+def list_inactive_domains() -> None:
 	sites = [site for site in _get_available_sites() if not site.active]
 	_print_sites(sites)
