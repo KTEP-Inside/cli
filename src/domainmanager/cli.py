@@ -1,6 +1,6 @@
 import click
-from domainmanager.certificates import create_ssl_certificate
 
+from domainmanager.certificates import create_ssl_certificate
 from domainmanager.nginx import DEFAULT_DOMAIN
 from domainmanager.nginx import create_nginx_config
 from domainmanager.nginx import create_nginx_logs_directory
