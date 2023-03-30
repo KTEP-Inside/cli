@@ -16,35 +16,19 @@ LOGS_DIRECTORY = pathlib.Path('/web/sites/kinside')
 class Site(typing.NamedTuple):
 	subdomain: str
 	domain: str
-	activated: bool
+	active: bool
 
 
 def create_nginx_config(
 	subdomain: str,
 	domain: str,
 ) -> None:
-	path = _resolve_config_path(subdomain, domain)
-	content = _generate_config_from_template(subdomain, domain)
-	_write_config(path, content)
+	path = SITES_AVAILABLE_DIRECTORY / f'{subdomain}.{domain}.conf'
+	content = TEMPLATE_FILE.read_text().format(
+		subdomain=subdomain,
+		domain=domain
+	)
 
-
-def _resolve_config_path(
-	subdomain: str,
-	domain: str,
-) -> pathlib.Path:
-	name = f'{subdomain}.{domain}.conf'
-	return SITES_AVAILABLE_DIRECTORY / name
-
-
-def _generate_config_from_template(
-	subdomain: str,
-	domain: str,
-) -> str:
-	content = TEMPLATE_FILE.read_text()
-	return content.format(subdomain=subdomain, domain=domain)
-
-
-def _write_config(path: pathlib.Path, content: str) -> None:
 	path.touch(exist_ok=True)
 	path.write_text(content)
 
@@ -57,7 +41,7 @@ def create_nginx_logs_directory(
 	path.mkdir(parents=True, exist_ok=True)
 
 
-def list_sites() -> None:
+def list_all_sites() -> None:
 	sites = _get_available_sites()
 	_print_sites(sites)
 
@@ -66,17 +50,31 @@ def _get_available_sites() -> list[Site]:
 	sites: list[Site] = []
 	for entity in SITES_AVAILABLE_DIRECTORY.iterdir():
 		subdomain, domain = entity.stem.split('.', 1)
-		activated = _is_site_activated(entity.name)
+		activated = _is_site_activated(entity)
 		sites.append(Site(subdomain, domain, activated))
 	return sites
 
 
-def _is_site_activated(config_name: str) -> bool:
-	file = SITES_ENABLE_DIRECTORY / config_name
+def _is_site_activated(config: pathlib.Path) -> bool:
+	file = SITES_ENABLE_DIRECTORY / config.name
 	return file.exists()
 
 
 def _print_sites(sites: list[Site]) -> None:
-	print('     {:<15} {:<20} {}'. format('SUBDOMAIN', 'DOMAIN', 'ACTIVATED'))
-	for i, site in enumerate(sites, start=1):
-		print(f'{i:<4} {site.subdomain:<15} {site.domain:<20} {site.activated}')
+	if len(sites) < 1:
+		return None
+
+	print('{:<15} {:<20} {}'. format('SUBDOMAIN', 'DOMAIN', 'STATUS'))
+	for site in sites:
+		status = 'active' if site.active else 'inactive'
+		print(f'{site.subdomain:<15} {site.domain:<20} {status}')
+
+
+def list_active_sites() -> None:
+	sites = [site for site in _get_available_sites() if site.active]
+	_print_sites(sites)
+
+
+def list_inactive_sites() -> None:
+	sites = [site for site in _get_available_sites() if not site.active]
+	_print_sites(sites)
