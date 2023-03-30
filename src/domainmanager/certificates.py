@@ -19,38 +19,10 @@ def create_ssl_certificate(
 	subdomain: str,
 	domain: str,
 ) -> None:
-	certificate_path = _resolve_certificate_path(subdomain, domain)
-	key_path = _resolve_key_path(subdomain, domain)
-	subject = _generate_subject_string()
-	_run_openssl(certificate_path, key_path, subject)
+	certificate_path = CERTIFICATES_DIRECTORY / f'{subdomain}.{domain}.crt'
+	key_path = CERTIFICATES_DIRECTORY / f'{subdomain}.{domain}.key'
+	subject_string = _generate_subject_string()
 
-
-def _resolve_certificate_path(
-	subdomain: str,
-	domain: str,
-) -> pathlib.Path:
-	return CERTIFICATES_DIRECTORY / f'{subdomain}.{domain}.crt'
-
-
-def _resolve_key_path(
-	subdomain: str,
-	domain: str,
-) -> pathlib.Path:
-	return CERTIFICATES_DIRECTORY / f'{subdomain}.{domain}.key'
-
-
-def _generate_subject_string() -> str:
-	string = ''
-	for key, value in ATTRIBUTES.items():
-		string += f'/{key}={value}'
-	return string
-
-
-def _run_openssl(
-	certificate_path: pathlib.Path,
-	key_path: pathlib.Path,
-	subject_string: str,
-) -> None:
 	subprocess.run([
 		'openssl', 'req',
 		'-x509',
@@ -61,3 +33,10 @@ def _run_openssl(
 		'-keyout', key_path,
 		'-subj', subject_string,
 	])
+
+
+def _generate_subject_string() -> str:
+	string = ''
+	for key, value in ATTRIBUTES.items():
+		string += f'/{key}={value}'
+	return string
