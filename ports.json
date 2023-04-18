@@ -1,0 +1,29 @@
+{
+	"_using": {
+		"web": {
+			"next": 502,
+			"free": []
+		},
+		"back": {
+			"next": 1502,
+			"free": []
+		},
+		"db": {
+			"next": 3002,
+			"free": []
+		},
+		"other": {
+			"next": 5001,
+			"free": []
+		},
+		"reserve": {
+			"next": 8001,
+			"free": []
+		}
+	},
+	"main": {
+		"db": [3001],
+		"web": [501],
+		"backend": [1501]
+	}
+}

@@ -1,2 +1,2 @@
-include src/domainmanager/template.conf
+include src/domain/template.conf
 exclude-global *.pyc
