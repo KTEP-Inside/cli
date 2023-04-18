@@ -10,7 +10,7 @@ from .nginx import list_inactive_domains, \
 from .sources import create_sources_directory
 
 
-@click.group()
+@click.group("domain")
 def cli() -> None:
     pass
 
@@ -49,4 +49,4 @@ def list_domains(
 
 
 def run() -> None:
-    cli(prog_name='domain-manager')
+    cli(prog_name='kinsidectl domain')
