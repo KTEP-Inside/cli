@@ -1,6 +1,6 @@
 from typing import List, Callable, Any, Dict
 from pathlib import Path
-from json import loads
+from json import loads, dumps
 
 from .constants import CONFIG_DIR
 
@@ -9,8 +9,12 @@ def split_key(key: str) -> List[str]:
     return key.split('.')
 
 
-def get_config(file: Path) -> Dict:
+def read_config(file: Path) -> Dict:
     return loads(file.read_text())
+
+
+def write_config(file: Path, content: Any) -> None:
+    return file.write_text(dumps(content, indent=2))
 
 
 def get_config_value(config: Dict, keys: List[str]) -> Any | None:

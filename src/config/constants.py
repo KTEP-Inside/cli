@@ -7,6 +7,7 @@ DEFAULTS_FILE_NAME: Final[str] = 'default.json'
 DOMAINS_FILE_NAME: Final[str] = 'domains.json'
 PORTS_FILE_NAME: Final[str] = 'ports.json'
 PROJECTS_FILE_NAME: Final[str] = 'projects.json'
+PROJECT_FILE_NAME:Final[str] = '.kinsiderc'
 
 TEMPLATE_DIR: Final[Path] = Path('/'.join(('.', 'templates')))
 

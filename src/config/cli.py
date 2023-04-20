@@ -4,7 +4,7 @@ from shutil import copyfile
 from pathlib import Path
 from typing import Any
 
-from .lib import with_config_file, split_key, get_config_value, get_config
+from .lib import with_config_file, split_key, get_config_value, read_config, write_config
 from .constants import DEFAULTS_FILE_NAME, DOMAINS_FILE_NAME, PORTS_FILE_NAME, PROJECTS_FILE_NAME, CONFIG_DIR, TEMPLATE_DIR, DEFAULTS_FILE
 
 
@@ -33,7 +33,7 @@ def get(file: Path, key: str | None):
         return
     
     keys = split_key(key)
-    value = get_config_value(get_config(file), keys)
+    value = get_config_value(read_config(file), keys)
 
     click.echo(json.dumps(value, indent=2))
     return
@@ -45,7 +45,7 @@ def get(file: Path, key: str | None):
 @with_config_file(DEFAULTS_FILE_NAME)
 def set(file: Path, key: str, value: Any):
     keys = split_key(key)
-    config = get_config(file)
+    config = read_config(file)
 
     parent_keys = keys[:-1]    
     target_key = keys[-1]
@@ -53,4 +53,4 @@ def set(file: Path, key: str, value: Any):
     
     target_section[target_key] = value
     
-    DEFAULTS_FILE.write_text(json.dumps(config))
+    write_config(DEFAULTS_FILE, config)

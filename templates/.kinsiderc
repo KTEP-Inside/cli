@@ -1,0 +1,12 @@
+{
+	"name": null,
+	"envFile": ".env",
+	"network": {
+		"domain": {
+			"inject": true
+		},
+		"ports": {
+			"inject": true
+		}
+	}
+}
