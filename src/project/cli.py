@@ -1,9 +1,10 @@
-from click import group, option, STRING, argument, echo
+from click import group, option, STRING, argument, echo, BOOL
 from os import getcwd, remove as rm
 from os.path import join
 from pathlib import Path
+from shutil import copyfile
 
-from config import with_config_file, PROJECTS_FILE, read_config, TEMPLATE_DIR, PROJECT_FILE_NAME, write_config
+from config import PROJECTS_FILE, read_config, TEMPLATE_DIR, PROJECT_FILE_NAME, write_config, PROJECTS_FILE_NAME
 
 from .lib import get_project
 
@@ -12,10 +13,16 @@ def cli():
     pass
 
 
+@cli.command('init')
+@option('--rewrite', is_flag=True, default=False, type=BOOL)
+def init(rewrite: bool):
+    if rewrite or not PROJECTS_FILE.exists():
+        copyfile(TEMPLATE_DIR / PROJECTS_FILE_NAME,  PROJECTS_FILE)
+
+
 @cli.command('create')
 @argument('project-name', type=STRING)
-@with_config_file(PROJECTS_FILE)
-def create(projects_file: Path, project_name: str):
+def create(project_name: str):
     current_dir = getcwd()
 
     current_dir_config = Path(join(current_dir, PROJECT_FILE_NAME))
@@ -32,24 +39,23 @@ def create(projects_file: Path, project_name: str):
 
     write_config(current_dir_config, template_config)
 
-    if not projects_file.exists():
+    if not PROJECTS_FILE.exists():
         echo('Глобальный файл проектов не найден. Пожалуйста, пресоздайте все глобальные файлы командой kinsidectl config init --rewrite')
         return
 
     project = dict(
         [["dir", current_dir], ["usePorts", False], ["useDomain", False]])
 
-    projects_config = read_config(projects_file)
+    projects_config = read_config(PROJECTS_FILE)
     projects_config[project_name] = project
 
-    write_config(projects_file, projects_config)
+    write_config(PROJECTS_FILE, projects_config)
 
 
 @cli.command('recreate')
 @argument('project-name', type=STRING)
-@with_config_file(PROJECTS_FILE)
-def recreate(projects_file: Path, project_name: str):
-    project = get_project(projects_file, project_name)
+def recreate(project_name: str):
+    project = get_project(PROJECTS_FILE, project_name)
 
     if not project:
         echo(f'Проекта с именем {project_name} не существует')
@@ -78,9 +84,8 @@ def sync():
 
 @cli.command('remove')
 @argument('project-name', type=STRING)
-@with_config_file(PROJECTS_FILE)
-def remove(projects_file: Path, project_name: str):
-    projects = read_config(projects_file)
+def remove(project_name: str):
+    projects = read_config(PROJECTS_FILE)
     project = projects.get(project_name)
 
     rm(join(project['dir'], PROJECT_FILE_NAME))
@@ -93,14 +98,13 @@ def remove(projects_file: Path, project_name: str):
     
     projects.pop(project_name)
     
-    write_config(projects_file, projects)
+    write_config(PROJECTS_FILE, projects)
     
 
 
 @cli.command('ls')
-@with_config_file(PROJECTS_FILE)
-def ls(projects_file: Path):
-    projects = read_config(projects_file)
+def ls():
+    projects = read_config(PROJECTS_FILE)
 
     template = "{name:<15} {dir:<25}"
 
@@ -113,6 +117,5 @@ def ls(projects_file: Path):
 
 @cli.command('inject')
 @argument('project-name', type=STRING)
-@with_config_file(PROJECTS_FILE)
 def inject(project_name: str):
     pass

@@ -28,13 +28,3 @@ def get_config_value(config: Dict, keys: List[str]) -> Any | None:
             return None
 
     return value
-
-
-def with_config_file(name: str) -> Callable:
-    path = CONFIG_DIR / name
-
-    def wrapper(func: Callable):
-        def foo(*args, **kwargs):
-            return func(path, *args, **kwargs)
-        return foo
-    return wrapper

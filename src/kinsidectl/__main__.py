@@ -1,4 +1,3 @@
-from config.constants import CONFIG_DIR
 from .cli import cli
 
 
@@ -10,6 +9,4 @@ def main():
 
 
 if __name__ == "__main__":
-    if not CONFIG_DIR.exists():
-        CONFIG_DIR.mkdir(parents=True)
     main()
