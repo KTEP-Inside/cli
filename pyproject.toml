@@ -10,11 +10,11 @@ dependencies = [
 requires-python = ">=3.10"
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project.urls]
 Homepage = "https://github.com/KTEP-inside/cli"
 
 [project.scripts]
-kinsidectl = "kinsidectl.__main__:main"
+kinsidectl = "kinsidectl:main"

@@ -1,6 +1,5 @@
 from typing import TypedDict, Dict, List, Union
 
-
 class ProjectInfo(TypedDict):
     dir: str
     usePorts: bool

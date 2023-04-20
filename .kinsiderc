@@ -1,0 +1,15 @@
+{
+  "name": "test",
+  "envFile": ".env",
+  "network": {
+    "domain": {
+      "inject": true
+    },
+    "ports": {
+      "inject": true,
+      "web": [
+        501
+      ]
+    }
+  }
+}
