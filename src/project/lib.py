@@ -1,7 +1,14 @@
 from pathlib import Path
-from typing import Dict
 
-from config import read_config
+from shared.lib import read_config
 
-def get_project(projects_file: Path, name: str) -> Dict | None:
-    return read_config(projects_file).get(name)
+from .config import PROJECTS_CONFIG
+from .types import ProjectConfig, ProjectsConfig, ProjectInfo
+
+
+def read_project_config(path: Path) -> ProjectConfig:
+    return read_config(path)
+
+
+def read_projects_config() -> ProjectsConfig:
+    return read_config(PROJECTS_CONFIG)

@@ -4,9 +4,13 @@ from os.path import join
 from pathlib import Path
 from shutil import copyfile
 
-from config import PROJECTS_FILE, read_config, TEMPLATE_DIR, PROJECT_FILE_NAME, write_config, PROJECTS_FILE_NAME
+from shared.config import TEMPLATE_DIR
+from shared.lib import write_config
 
-from .lib import get_project
+from .types import ProjectInfo
+from .config import PROJECTS_CONFIG, PROJECTS_CONFIG_NAME, PROJECT_CONFIG_NAME
+from .lib import read_projects_config, read_project_config
+
 
 @group('project')
 def cli():
@@ -16,8 +20,8 @@ def cli():
 @cli.command('init')
 @option('--rewrite', is_flag=True, default=False, type=BOOL)
 def init(rewrite: bool):
-    if rewrite or not PROJECTS_FILE.exists():
-        copyfile(TEMPLATE_DIR / PROJECTS_FILE_NAME,  PROJECTS_FILE)
+    if rewrite or not PROJECTS_CONFIG.exists():
+        copyfile(TEMPLATE_DIR / PROJECTS_CONFIG_NAME,  PROJECTS_CONFIG)
 
 
 @cli.command('create')
@@ -25,45 +29,49 @@ def init(rewrite: bool):
 def create(project_name: str):
     current_dir = getcwd()
 
-    current_dir_config = Path(join(current_dir, PROJECT_FILE_NAME))
+    current_dir_config = Path(join(current_dir, PROJECT_CONFIG_NAME))
 
     if current_dir_config.exists():
-        config = read_config(current_dir_config)
+        config = read_project_config(current_dir_config)
         name = config['name']
         echo(
             f'В данной директории уже существует проект с именем {name}')
         return
 
-    template_config = read_config(TEMPLATE_DIR / PROJECT_FILE_NAME)
+    template_config = read_project_config(TEMPLATE_DIR / PROJECT_CONFIG_NAME)
     template_config['name'] = project_name
 
     write_config(current_dir_config, template_config)
 
-    if not PROJECTS_FILE.exists():
+    if not PROJECTS_CONFIG.exists():
         echo('Глобальный файл проектов не найден. Пожалуйста, пресоздайте все глобальные файлы командой kinsidectl config init --rewrite')
         return
 
-    project = dict(
-        [["dir", current_dir], ["usePorts", False], ["useDomain", False]])
+    project: ProjectInfo = {
+        'dir': current_dir,
+        'useDomain': False,
+        'usePorts': False
+    }
 
-    projects_config = read_config(PROJECTS_FILE)
+    projects_config = read_projects_config()
     projects_config[project_name] = project
 
-    write_config(PROJECTS_FILE, projects_config)
+    write_config(PROJECTS_CONFIG, projects_config)
 
 
 @cli.command('recreate')
 @argument('project-name', type=STRING)
 def recreate(project_name: str):
-    project = get_project(PROJECTS_FILE, project_name)
+    projects = read_projects_config()
+    project = projects.get(project_name)
 
     if not project:
         echo(f'Проекта с именем {project_name} не существует')
         return
 
-    new_project_config = read_config(TEMPLATE_DIR / PROJECT_FILE_NAME)
+    project_config = read_project_config(TEMPLATE_DIR / PROJECT_CONFIG_NAME)
 
-    new_project_config['name'] = project_name
+    project_config['name'] = project_name
 
     if project['usePorts']:
         pass
@@ -71,9 +79,9 @@ def recreate(project_name: str):
     if project['useDomain']:
         pass
 
-    new_project_config_path = Path(join(project['dir'], PROJECT_FILE_NAME))
+    project_config_path = Path(join(project['dir'], PROJECT_CONFIG_NAME))
 
-    write_config(new_project_config_path, new_project_config)
+    write_config(project_config_path, project_config)
 
 
 @cli.command('sync')
@@ -85,26 +93,25 @@ def sync():
 @cli.command('remove')
 @argument('project-name', type=STRING)
 def remove(project_name: str):
-    projects = read_config(PROJECTS_FILE)
+    projects = read_projects_config()
     project = projects.get(project_name)
 
-    rm(join(project['dir'], PROJECT_FILE_NAME))
-    
+    rm(join(project['dir'], PROJECT_CONFIG_NAME))
+
     if project['usePorts']:
         pass
-    
+
     if project['useDomain']:
         pass
-    
+
     projects.pop(project_name)
-    
-    write_config(PROJECTS_FILE, projects)
-    
+
+    write_config(PROJECTS_CONFIG, projects)
 
 
 @cli.command('ls')
 def ls():
-    projects = read_config(PROJECTS_FILE)
+    projects = read_projects_config()
 
     template = "{name:<15} {dir:<25}"
 

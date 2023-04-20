@@ -1,2 +1,2 @@
-include src/domain/template.conf default.json ports.json domains.json
+include templates/*.*
 exclude-global *.pyc
