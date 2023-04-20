@@ -4,7 +4,8 @@ from shutil import copyfile
 from pathlib import Path
 from typing import Any
 
-from .constants import DEFAULTS_FILE_NAME, DOMAINS_FILE_NAME, PORTS_FILE_NAME, PROJECTS_FILE_NAME, CONFIG_DIR
+from .lib import with_config_file, split_key, get_config_value, get_config
+from .constants import DEFAULTS_FILE_NAME, DOMAINS_FILE_NAME, PORTS_FILE_NAME, PROJECTS_FILE_NAME, CONFIG_DIR, TEMPLATE_DIR, DEFAULTS_FILE
 
 
 @click.group('config')
@@ -17,25 +18,39 @@ def cli():
 def init(rewrite: bool):
     files = [DEFAULTS_FILE_NAME, DOMAINS_FILE_NAME,
              PORTS_FILE_NAME, PROJECTS_FILE_NAME]
-    current_dir = Path('.')
     for file_name in files:
         file = CONFIG_DIR / file_name
         if rewrite or not file.exists():
-            copyfile(current_dir / file_name, file,)
+            copyfile(TEMPLATE_DIR / file_name, file,)
 
 
 @cli.command('get')
 @click.option('--key', type=click.STRING, required=False)
-def get(key: str | None):
+@with_config_file(DEFAULTS_FILE_NAME)
+def get(file: Path, key: str | None):
     if not key:
-        config = json.load()
-        click.echo("Not key")
-        return None
+        click.echo(file.read_text(), color=True)
+        return
+    
+    keys = split_key(key)
+    value = get_config_value(get_config(file), keys)
+
+    click.echo(json.dumps(value, indent=2))
     return
 
 
 @cli.command('set')
 @click.option('--key', type=click.STRING)
 @click.option('--value')
-def set(key: str, value: Any):
-    pass
+@with_config_file(DEFAULTS_FILE_NAME)
+def set(file: Path, key: str, value: Any):
+    keys = split_key(key)
+    config = get_config(file)
+
+    parent_keys = keys[:-1]    
+    target_key = keys[-1]
+    target_section = get_config_value(config, parent_keys)
+    
+    target_section[target_key] = value
+    
+    DEFAULTS_FILE.write_text(json.dumps(config))
