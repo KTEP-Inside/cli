@@ -7,9 +7,7 @@
     },
     "ports": {
       "inject": true,
-      "web": [
-        501
-      ]
+      "web": []
     }
   }
 }
