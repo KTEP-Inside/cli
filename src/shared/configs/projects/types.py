@@ -8,8 +8,8 @@ from .config import PROJECTS_CONFIG, PROJECT_CONFIG_NAME
 
 class ProjectInfo(TypedDict):
     dir: str
-    usePorts: bool
-    useDomain: bool
+    use_ports: bool
+    use_domains: bool
 
 
 ProjectsConfig = Dict[str, ProjectInfo]
