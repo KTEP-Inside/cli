@@ -1,7 +1,7 @@
 from typing import Final
 from pathlib import Path
 
-from shared.config import CONFIG_DIR
+from ...config import CONFIG_DIR
 
 PROJECTS_CONFIG_NAME: Final[str] = 'projects.json'
 PROJECT_CONFIG_NAME: Final[str] = '.kinsiderc'

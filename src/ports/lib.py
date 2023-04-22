@@ -1,64 +1,71 @@
 from typing import List
-from functools import reduce
+from click import echo
+from click.exceptions import BadOptionUsage
 
-from project import ProjectConfig
-from shared.lib import read_config, write_config
-
-from .config import PORTS_CONFIG
-from .types import PortsConfig, PortsUsingPortInfo, PortsProjectInfo
-
-
-def read_ports_config() -> PortsConfig:
-    return read_config(PORTS_CONFIG)
-
-
-def write_ports_config(config: PortsConfig) -> None:
-    write_config(PORTS_CONFIG, config)
+from shared.configs.ports import PortsUsingPortInfo, PortsProjectInfo
+from shared.configs.default import DefaultConfig
+from shared.configs.projects import ProjectNetworkInfo
 
 
 def allocate_ports(using_port_info: PortsUsingPortInfo, max: int, count: int = 1) -> List[int]:
-    ports = []
+    ports: List[int] = []
+
     if len(using_port_info['free']) > 0:
-        if len(using_port_info['free']) >= count:
-            ports = using_port_info['free'][0:count]
-            using_port_info['free'] = using_port_info['free'][count:]
-            count = 0
-        else:
-            ports = using_port_info['free']
-            using_port_info['free'] = []
-            count -= len(ports)
+        ports = using_port_info['free'][0:count]
+        using_port_info['free'] = using_port_info['free'][count:]
+        count -= len(ports)
 
     for port in range(using_port_info['next'], max + 1):
-        if not count:
+        if count <= 0:
             using_port_info['next'] = port
             break
+
         ports.append(port)
         count -= 1
 
     return ports
 
 
-def free_ports(type: str,
-               ports_config: PortsConfig,
-               project_config: ProjectConfig,
-               index: int | None = None) -> None:
-    network = project_config['network']
-    free_ports_by_type(
-        type=type, using=ports_config['using'][type], ports_project_config=network['ports'], index=index)
-    ports_config['projects'][project_config['name']][type] = network['ports'][type]
-
-
-def free_ports_by_type(type: str, using: PortsUsingPortInfo,
-                       ports_project_config: PortsProjectInfo,
+def free_ports_by_type(type: str | None, using: PortsUsingPortInfo,
+                       project: PortsProjectInfo,
+                       network: ProjectNetworkInfo,
                        index: int | None = None) -> None:
-    free = ports_project_config[type][index: index +
-                                      1] if index != None else list(ports_project_config[type])
+    free = []
+    print(project)
+
+    if index != None:
+        free = project[type][index: index + 1]
+    else:
+        free = list(project[type])
+
     for port in free:
-        ports_project_config[type].remove(port)
-    
-    
-    using['free'] += free
+        project[type].remove(port)
+
+    using[type]['free'] += free
+
+    network['ports'][type] = project[type]
 
 
 def has_ports(ports_project_info: PortsProjectInfo) -> bool:
-    return reduce(lambda reduced, ports: reduced and len(ports), ports_project_info.values(), True)
+    for ports in ports_project_info.values():
+        if len(ports) > 0:
+            return True
+
+    return False
+
+
+def raise_invalid_port_type(default_config: DefaultConfig, type: str | None) -> None:
+    if not type:
+        return
+
+    ports_info = default_config['ports']
+    port_info = ports_info.get(type)
+
+    if port_info:
+        return
+
+    echo('Такого типа портов не существует')
+    types = ', '.join([type for type in ports_info])
+    echo(f'Доступны следующие типы портов {types}')
+    raise BadOptionUsage(
+        option_name='-t', message='Неправильный тип порта')
