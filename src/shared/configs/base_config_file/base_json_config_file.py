@@ -7,8 +7,8 @@ _TJsonConfig = TypeVar('_TJsonConfig')
 
 
 class BaseJSONConfigFile(BaseConfigFile[_TJsonConfig]):
-    def _postread(self, content: str) -> _TJsonConfig:
-        return loads(content)
+    def _postread(self) -> None:
+        self.config = loads(self._raw)
 
-    def _prewrite(self, config: _TJsonConfig) -> str:
-        return dumps(config, indent=2)
+    def _prewrite(self) -> None:
+        self._raw = dumps(self.config, indent=2)

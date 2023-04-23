@@ -1,15 +1,6 @@
-from click import group, option, echo, BOOL, STRING, INT
-from json import dumps
-
-from shared.lib import get_or_create
-from shared.config import TEMPLATE_DIR
-from shared.configs.ports import PORTS_CONFIG, PortsConfigFile, \
-    PORTS_CONFIG_NAME,  PortsUsingPortInfo
-from shared.configs.projects import ProjectConfigFile, ProjectsConfigFile
-from shared.configs.default import DefaultConfigFile
+from click import group, option, BOOL, STRING, INT
 
 from . import handlers
-from .lib import allocate_ports, has_ports, validate_port_type, free_ports_by_type
 
 
 @group('ports')

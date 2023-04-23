@@ -2,9 +2,7 @@ from typing import List
 from click import echo
 from click.exceptions import BadOptionUsage
 
-from shared.configs.ports import \
-    PortsUsingPortInfo, PortsProjectInfo, \
-    PortsConfig
+from shared.configs.ports import PortsUsingPortInfo, PortsProjectInfo
 from shared.configs.default import DefaultConfig
 
 
@@ -62,13 +60,3 @@ def validate_port_type(default_config: DefaultConfig, type: str) -> None:
     echo(f'Доступны следующие типы портов {types}')
     raise BadOptionUsage(
         option_name='-t', message='Неправильный тип порта')
-
-
-def get_project_ports_or_raise(ports_config: PortsConfig, project_name: str) -> PortsProjectInfo:
-    project_ports = ports_config['projects'].get(project_name)
-
-    if not project_ports:
-        raise BadOptionUsage(
-            f'Для проекта {project_name} не выделен но один порт')
-
-    return project_ports

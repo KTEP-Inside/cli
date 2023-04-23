@@ -13,7 +13,7 @@ from shared.configs.projects import \
     PROJECTS_CONFIG, PROJECTS_CONFIG_NAME, \
     ProjectConfigFile, PROJECT_CONFIG_NAME
 
-from .lib import get_project_or_raise, filter_injected_keys
+from .lib import filter_injected_keys
 
 
 def init(rewrite: bool):
@@ -49,7 +49,7 @@ def create(project_name: str):
 
 def sync(project_name: str):
     projects_config_file = ProjectsConfigFile()
-    project = get_project_or_raise(projects_config_file, project_name)
+    project = projects_config_file.get_project_or_raise(project_name)
 
     _create_project_config(project_name, project['dir'])
 
@@ -70,7 +70,7 @@ def update(project_name: str):
 def remove(project_name: str):
     projects_config_file = ProjectsConfigFile()
     project_config_file = ProjectConfigFile(project_name)
-    project = get_project_or_raise(projects_config_file, project_name)
+    project = projects_config_file.get_project_or_raise(project_name)
 
     if project['use_ports']:
         ports_handlers.free(project_name, None, None)
@@ -98,7 +98,7 @@ def show_all_projects():
 
 def inject_env_variables(project_name: str):
     projects_config_file = ProjectsConfigFile()
-    project = get_project_or_raise(projects_config_file, project_name)
+    project = projects_config_file.get_project_or_raise(project_name)
     project_config_file = ProjectConfigFile(project_name)
     project_config = project_config_file.config
 

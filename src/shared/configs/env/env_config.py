@@ -18,20 +18,20 @@ class EnvConfigFile(BaseConfigFile[_EnvDict]):
         raise TypeError(
             f"Тип {type(source).__name__} не поддерживается. Используйте типы производные от {Mapping.__name__} и {Sequence.__name__}.")
 
-    def _prewrite(self, config: _EnvDict):
+    def _prewrite(self):
         result = ""
 
-        for key, value in config.items():
+        for key, value in self.config.items():
             if type(value) is bool:
                 value = int(value)
             result += PATTERN.format(key=key, value=value)
 
-        return result
+        self._raw = result
 
-    def _postread(self, content: str):
+    def _postread(self) -> None:
         result = {}
 
-        for line in content.split('\n'):
+        for line in self._raw.split('\n'):
             if line.startswith('#') or not line.strip():
                 continue
 
@@ -44,7 +44,7 @@ class EnvConfigFile(BaseConfigFile[_EnvDict]):
                 value = value.format_map(result)
             result[key] = value
 
-        return result
+        self.config = result
 
     def _update_env_dict_by_mapping(self, source: Mapping[str, Any], key_prefix: str | None = None):
         for key in source:

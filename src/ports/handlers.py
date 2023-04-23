@@ -12,8 +12,7 @@ from shared.configs.ports import  \
 
 from .lib import  \
     validate_port_type, allocate_ports, \
-    get_project_ports_or_raise, has_ports, \
-    free_ports_by_type
+    has_ports, free_ports_by_type
 
 
 def init(rewrite: bool):
@@ -76,7 +75,7 @@ def free(project_name: str, port_type: str | None, port_index: int | None):
 
     using = ports_config['using']
     projects = ports_config['projects']
-    project = get_project_ports_or_raise(ports_config, project_name)
+    project = ports_config_file.get_by_project_or_raise(project_name)
 
     deleting_types = []
     if port_type:
@@ -105,9 +104,8 @@ def show_project_ports(project_name: str, port_type: str):
     if port_type:
         validate_port_type(default_config_file.config, port_type)
 
-    ports_config = ports_config_file.config
-    project_ports_config = get_project_ports_or_raise(
-        ports_config, project_name)
+    project_ports_config = ports_config_file.get_by_project_or_raise(
+        project_name)
 
     show = project_ports_config.get(
         port_type) if port_type else project_ports_config

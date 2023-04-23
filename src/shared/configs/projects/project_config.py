@@ -3,25 +3,8 @@ from os.path import join
 
 from ..base_config_file import BaseJSONConfigFile
 
-from .config import PROJECTS_CONFIG, PROJECT_CONFIG_NAME
-
-
-class ProjectInfo(TypedDict):
-    dir: str
-    use_ports: bool
-    use_domains: bool
-
-
-ProjectsConfig = Dict[str, ProjectInfo]
-
-
-class ProjectsConfigFile(BaseJSONConfigFile[ProjectsConfig]):
-    def __init__(self, path: str | None = None):
-        _path = path or PROJECTS_CONFIG
-        super().__init__(path=_path)
-
-    def get_project(self, name: str) -> ProjectInfo | None:
-        return self.config.get(name)
+from .projects_config import ProjectsConfigFile
+from .config import PROJECT_CONFIG_NAME
 
 
 class ProjectDomainInfo(TypedDict):
@@ -57,7 +40,7 @@ class ProjectConfigFile(BaseJSONConfigFile[ProjectConfig]):
         if path:
             _path = path
         else:
-            _path = join(projects.get_project(name)[
+            _path = join(projects.get_project_or_raise(name)[
                          'dir'], PROJECT_CONFIG_NAME)
 
         super().__init__(_path)
