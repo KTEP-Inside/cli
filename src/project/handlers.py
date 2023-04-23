@@ -7,14 +7,13 @@ from pathlib import Path
 
 from ports import ports_handlers
 from shared.config import TEMPLATE_DIR, DEFAULT_ENV_FILE_NAME
-from shared.configs.env import EnvConfigFile, update_env_dict
+from shared.configs.env import EnvConfigFile
 from shared.configs.projects import \
     ProjectInfo, ProjectsConfigFile, \
     PROJECTS_CONFIG, PROJECTS_CONFIG_NAME, \
     ProjectConfigFile, PROJECT_CONFIG_NAME
 
 from .lib import get_project_or_raise, filter_injected_keys
-from .config import INJECT_BLACKLIST
 
 
 def init(rewrite: bool):
@@ -116,9 +115,8 @@ def inject_env_variables(project_name: str):
         filter(filter_injected_keys, network['ports'].items()))
     filtered_domain = dict(
         filter(filter_injected_keys, network['domain'].items()))
-
-    update_env_dict(filtered_ports, env_file.config)
-    update_env_dict(filtered_domain, env_file.config)
+    env_file.update(filtered_ports)
+    env_file.update(filtered_domain)
 
     env_file.save()
 
