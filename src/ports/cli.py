@@ -31,7 +31,7 @@ def free(project: str, type: str | None, port_index: int | None):
 
 
 @cli.command('ls')
-@option('--project', type=STRING)
+@option('--project', type=STRING, prompt='Имя проекта')
 @option('-t', '--type', type=STRING, required=False)
 def ls(project: str, type: str):
     handlers.show_project_ports(project, type)

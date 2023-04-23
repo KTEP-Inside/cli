@@ -110,7 +110,7 @@ def show_project_ports(project_name: str, port_type: str):
     show = project_ports_config.get(
         port_type) if port_type else project_ports_config
 
-    if not show or len(show):
+    if not show or not len(show):
         echo(f'Такого типа порты не выделены для проекта {project_name}')
         return
 
@@ -119,7 +119,7 @@ def show_project_ports(project_name: str, port_type: str):
 
 def show_server_ports():
     ports_config_file = PortsConfigFile()
-    echo(dumps(ports_config_file.config, indent=2))
+    echo(dumps(ports_config_file.config['using'], indent=2))
 
 
 def sync_project_config(project_name: str) -> None:

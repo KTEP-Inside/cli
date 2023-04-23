@@ -3,10 +3,11 @@
 1. [Основная информация](#основная-информация)
 2. [Глобальные флаги](#глобальные-флаги)
 3. [Список команд](#список-команд)
-   1. [Create](#create)
-   2. [Remove](#remove)
-   3. [Ls](#ls)
-   4. [Status](#status)
+    1. [Init](#init)
+    2. [Allocate](#create)
+    3. [Free](#free)
+    4. [Ls](#ls)
+    5. [Status](#status)
 
 ## Основная информация
 
@@ -22,12 +23,25 @@ kinsidectl ports subcommand [...args] [...flags]
 
 ## Список команд
 
-1. [Create](#create)
-2. [Remove](#remove)
-3. [Ls](#ls)
-4. [Status](#status)
+1. [Init](#init)
+2. [Allocate](#allocate)
+3. [Free](#free)
+4. [Ls](#ls)
+5. [Status](#status)
 
-### Create
+### Init
+
+Инициализирует [конфигурацию поров](./Глобальное-состояние-и-файлы-конфигурации.md#порты) на основании [конфигурации по умолчанию](./Глобальное-состояние-и-файлы-конфигурации.md#базовая-конфигурация) или переписывает уже созданную. Следует выполнять только после первой установки или когда нужно сбросить текущую конфигурацию.
+
+```bash
+kinsidectl ports init
+```
+
+#### Флаги
+
+1. --rewrite - перезаписать текущую конфигурацию, если такая существует
+
+### Allocate
 
 Выделяет порты и создает ассоциацию их с проектом.
 
@@ -35,13 +49,13 @@ kinsidectl ports subcommand [...args] [...flags]
 
 #### Обязательные флаги
 
-1. --project - названгие проекта, к которому будет привязан порт
+1. --project - название проекта, к которому будет привязан порт
 2. -t/--type - тип или направление выделяемого порта.
 
 Пример использования:
 
 ```bash
-kinsidectl ports create --project project-name -t web
+kinsidectl ports allocate --project project-name -t web
 ```
 
 Команда выделит один порт из диапазона web для проекта project-name.
@@ -50,9 +64,9 @@ kinsidectl ports create --project project-name -t web
 
 1. -c/--count - количество выделяемых портов, по умолчанию 1.
 
-### Remove
+### Free
 
-Освобождает все порты проекта, все порты типа на проекте или конретный порт в контретном типе.
+Освобождает все порты проекта, все порты типа на проекте или конкретный порт в конкретном типе.
 
 #### Обязательные флаги
 
@@ -61,7 +75,7 @@ kinsidectl ports create --project project-name -t web
 Пример использования:
 
 ```bash
-kinsidectl ports remove --project project-name
+kinsidectl ports free --project project-name
 ```
 
 Команда удалит все порты, выделенные под проект.
@@ -72,7 +86,7 @@ kinsidectl ports remove --project project-name
 2. --port-index - индекс порта в массиве. **Применяется только с флагом -t/--type**
 
 ```bash
-kinsidectl ports remove --project project-name -t web --port-index 1
+kinsidectl ports free --project project-name -t web --port-index 1
 ```
 
 Удалит порт у проекта project-name в типе web под индексом 1.
