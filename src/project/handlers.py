@@ -111,12 +111,14 @@ def inject_env_variables(project_name: str):
     env_file = EnvConfigFile(env_file_path)
 
     network = project_config['network']
-    filtered_ports = dict(
-        filter(filter_injected_keys, network['ports'].items()))
-    filtered_domain = dict(
-        filter(filter_injected_keys, network['domain'].items()))
-    env_file.update(filtered_ports)
-    env_file.update(filtered_domain)
+    if network['ports']['inject']:
+        filtered_ports = dict(
+            filter(filter_injected_keys, network['ports'].items()))
+        env_file.update(filtered_ports)
+    if network['domain']['inject']:
+        filtered_domain = dict(
+            filter(filter_injected_keys, network['domain'].items()))
+        env_file.update(filtered_domain)
 
     env_file.save()
 
