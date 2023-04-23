@@ -1,6 +1,6 @@
 from typing import TypedDict, Dict, List
 
-from ..base_config_file import BaseConfigFile
+from ..base_config_file import BaseJSONConfigFile
 
 from .config import PORTS_CONFIG
 
@@ -20,7 +20,7 @@ class PortsConfig(TypedDict):
     projects: PortsProjectsInfo
 
 
-class PortsConfigFile(BaseConfigFile[PortsConfig]):
+class PortsConfigFile(BaseJSONConfigFile[PortsConfig]):
 
     def __init__(self, path: str | None = None):
         _path = path or PORTS_CONFIG

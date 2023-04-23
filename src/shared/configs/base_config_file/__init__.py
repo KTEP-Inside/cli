@@ -1,1 +1,2 @@
 from .base_config_file import BaseConfigFile
+from .base_json_config_file import BaseJSONConfigFile

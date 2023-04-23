@@ -1,1 +1,1 @@
-from .paths import *
+from .paths import DEFAULT_ENV_FILE_NAME, CONFIG_DIR, TEMPLATE_DIR

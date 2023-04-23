@@ -1,6 +1,6 @@
 from typing import TypedDict, Dict, List
 
-from ..base_config_file import BaseConfigFile
+from ..base_config_file import BaseJSONConfigFile
 
 from .config import DOMAINS_CONFIG
 
@@ -24,7 +24,7 @@ class DomainsConfig(TypedDict):
     projects: Dict[str, DomainProjectInfo]
 
 
-class DomainsConfigFile(BaseConfigFile[DomainsConfig]):
+class DomainsConfigFile(BaseJSONConfigFile[DomainsConfig]):
     def __init__(self, path: str | None = None):
         _path = path or DOMAINS_CONFIG
         super().__init__(path=_path)

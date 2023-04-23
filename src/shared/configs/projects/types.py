@@ -1,7 +1,7 @@
 from typing import TypedDict, Dict, List, Union
 from os.path import join
 
-from ..base_config_file import BaseConfigFile
+from ..base_config_file import BaseJSONConfigFile
 
 from .config import PROJECTS_CONFIG, PROJECT_CONFIG_NAME
 
@@ -15,7 +15,7 @@ class ProjectInfo(TypedDict):
 ProjectsConfig = Dict[str, ProjectInfo]
 
 
-class ProjectsConfigFile(BaseConfigFile[ProjectsConfig]):
+class ProjectsConfigFile(BaseJSONConfigFile[ProjectsConfig]):
     def __init__(self, path: str | None = None):
         _path = path or PROJECTS_CONFIG
         super().__init__(path=_path)
@@ -49,7 +49,7 @@ class ProjectConfig(TypedDict):
     network: ProjectNetworkInfo
 
 
-class ProjectConfigFile(BaseConfigFile[ProjectConfig]):
+class ProjectConfigFile(BaseJSONConfigFile[ProjectConfig]):
     def __init__(self, name: str | None, path: str | None = None):
         projects = ProjectsConfigFile()
         _path = None

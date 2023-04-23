@@ -6,13 +6,15 @@ from os.path import join
 from pathlib import Path
 
 from ports import ports_handlers
-from shared.config import TEMPLATE_DIR
+from shared.config import TEMPLATE_DIR, DEFAULT_ENV_FILE_NAME
+from shared.configs.env import EnvConfigFile, update_env_dict
 from shared.configs.projects import \
     ProjectInfo, ProjectsConfigFile, \
     PROJECTS_CONFIG, PROJECTS_CONFIG_NAME, \
     ProjectConfigFile, PROJECT_CONFIG_NAME
 
-from .lib import get_project_or_raise
+from .lib import get_project_or_raise, filter_injected_keys
+from .config import INJECT_BLACKLIST
 
 
 def init(rewrite: bool):
@@ -96,9 +98,29 @@ def show_all_projects():
 
 
 def inject_env_variables(project_name: str):
-    echo(f'Проект {project_name}')
-    echo('WORK IN PROGRESS')
-    pass
+    projects_config_file = ProjectsConfigFile()
+    project = get_project_or_raise(projects_config_file, project_name)
+    project_config_file = ProjectConfigFile(project_name)
+    project_config = project_config_file.config
+
+    env_file_name = project_config['envFile'] or DEFAULT_ENV_FILE_NAME
+    env_file_path = Path(join(project['dir'], env_file_name))
+
+    if not env_file_path.exists():
+        env_file_path.touch()
+
+    env_file = EnvConfigFile(env_file_path)
+
+    network = project_config['network']
+    filtered_ports = dict(
+        filter(filter_injected_keys, network['ports'].items()))
+    filtered_domain = dict(
+        filter(filter_injected_keys, network['domain'].items()))
+
+    update_env_dict(filtered_ports, env_file.config)
+    update_env_dict(filtered_domain, env_file.config)
+
+    env_file.save()
 
 
 def _create_project_config(project_name: str, dir: str) -> ProjectConfigFile:

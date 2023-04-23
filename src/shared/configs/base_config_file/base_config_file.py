@@ -1,32 +1,34 @@
 from abc import ABC
-from typing import TypeVar,  Generic, Dict
+from typing import TypeVar,  Generic
 from pathlib import Path
 from os import remove
-from json import dumps, loads
 
-_TCONFIG = TypeVar('_TCONFIG', bound=Dict)
+_TConfig = TypeVar('_TConfig')
 
 
-class BaseConfigFile(Generic[_TCONFIG], ABC):
-    _path: Path
-    config: _TCONFIG
+class BaseConfigFile(Generic[_TConfig], ABC):
+    path: Path
+    config: _TConfig
 
     def __init__(self, path: str | Path):
-        self._path = Path(path)
+        self.path = Path(path)
         self.read()
 
     def read(self, path: Path | None = None):
-        _path = path or self._path
-        self._path = _path
-        self.config = loads(self._path.read_text())
+        _path = path or self.path
+        self.path = _path
+        self.config = self._postread(self.path.read_text())
 
     def save(self, path: Path | None = None):
-        _path = path or self._path
-        _path.write_text(self._formate())
+        _path = path or self.path
+        _path.write_text(self._prewrite(self.config))
 
     def remove(self):
-        remove(self._path)
-        self._path = None
+        remove(self.path)
+        self.path = None
 
-    def _formate(self) -> str:
-        return dumps(self.config, indent=2)
+    def _postread(self, content: str) -> _TConfig:
+        return content
+
+    def _prewrite(self, config: _TConfig) -> str:
+        return config

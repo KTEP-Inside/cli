@@ -1,6 +1,6 @@
 from typing import TypedDict, Dict
 
-from ..base_config_file import BaseConfigFile
+from ..base_config_file import BaseJSONConfigFile
 
 from .config import DEFAULT_CONFIG
 
@@ -22,7 +22,7 @@ class DefaultConfig(TypedDict):
     ports: Dict[str, PortInfo]
 
 
-class DefaultConfigFile(BaseConfigFile[DefaultConfig]):
+class DefaultConfigFile(BaseJSONConfigFile[DefaultConfig]):
     def __init__(self, path: str | None = None):
         _path = path or DEFAULT_CONFIG
         super().__init__(path=_path)
